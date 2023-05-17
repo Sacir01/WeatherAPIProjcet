@@ -36,25 +36,37 @@ const isAuthenticated = basicAuth({
   });
   
 
-app.post('/login', (req, res) => {
-    const { username, password } = req.body;
-  
+  app.post('/login/:username/:password', (req, res) => {
+    const username = req.params.username;
+    const password = req.params.password;
+    console.log(`User requested to login with username: ${username} and password: ${password}`);
+ 
     // Find the user in the list of authorized users
     const user = users.find((user) => user.username === username);
-  
-    if (!user || password !== user.password) {
-      res.status(401).json({ error: 'Invalid credentials' });
-      return;
+ 
+    if (!user) {
+       res.status(401).json({ error: 'Invalid credentials/username' });
+       return;
     }
+
+    console.log(`Stored Password: ${user.password}`);
+    console.log(`Provided Password: ${password}`);
+ 
+    bcrypt.compare(password, user.password, (err, result) => {
+       if (err || !result) {
+          res.status(401).json({ error: 'Invalid credentials/password' });
+          return;
+       }
+ 
+       req.session.userId = user.username;
+       res.json({ message: 'Login successful' });
+       console.log(`User ${username} successfully logged in.`);
+    });
+ });
   
-    // Store the user ID in the session data
-    req.session.userId = user.username;
-  
-    res.json({ message: 'Login successful' });
-  });
 
 
-app.get('/weather/:latitude/:longitude', async (req, res) => {
+app.get('/weather/:latitude/:longitude', isAuthenticated, async (req, res) => {
   const cacheKey = req.url;
   const cachedData = cache.get(cacheKey);
   console.log(`User requested acces for Current Weather for `,req.params.latitude,` `,req.params.longitude )
@@ -83,7 +95,7 @@ app.get('/weather/:latitude/:longitude', async (req, res) => {
   }
 });
 
-app.get('/history/:latitude/:longitude/:month/:day', async (req, res) => {
+app.get('/history/:latitude/:longitude/:month/:day', isAuthenticated, async (req, res) => {
   const cacheKey = req.url;
   const cachedData = cache.get(cacheKey);
   console.log(`User requested acces for History Weather for `,req.params.latitude,` `,req.params.longitude,` for date `, req.params.month,``, req.params.day )
@@ -120,7 +132,7 @@ app.get('/history/:latitude/:longitude/:month/:day', async (req, res) => {
   }
 });
 
-app.get('/forecast/:latitude/:longitude', async (req, res) => {
+app.get('/forecast/:latitude/:longitude', isAuthenticated, async (req, res) => {
   const cacheKey = req.url;
   const cachedData = cache.get(cacheKey);
   console.log(`User requested acces for Forecast Weather for `,req.params.latitude,` `,req.params.longitude )

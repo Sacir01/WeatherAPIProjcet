@@ -66,7 +66,7 @@ const isAuthenticated = basicAuth({
   
 
 
-app.get('/weather/:latitude/:longitude', isAuthenticated, async (req, res) => {
+app.get('/weather/:latitude/:longitude', async (req, res) => {
   const cacheKey = req.url;
   const cachedData = cache.get(cacheKey);
   console.log(`User requested acces for Current Weather for `,req.params.latitude,` `,req.params.longitude )
@@ -95,7 +95,7 @@ app.get('/weather/:latitude/:longitude', isAuthenticated, async (req, res) => {
   }
 });
 
-app.get('/history/:latitude/:longitude/:month/:day', isAuthenticated, async (req, res) => {
+app.get('/history/:latitude/:longitude/:month/:day', async (req, res) => {
   const cacheKey = req.url;
   const cachedData = cache.get(cacheKey);
   console.log(`User requested acces for History Weather for `,req.params.latitude,` `,req.params.longitude,` for date `, req.params.month,``, req.params.day )
@@ -132,7 +132,7 @@ app.get('/history/:latitude/:longitude/:month/:day', isAuthenticated, async (req
   }
 });
 
-app.get('/forecast/:latitude/:longitude', isAuthenticated, async (req, res) => {
+app.get('/forecast/:latitude/:longitude', async (req, res) => {
   const cacheKey = req.url;
   const cachedData = cache.get(cacheKey);
   console.log(`User requested acces for Forecast Weather for `,req.params.latitude,` `,req.params.longitude )
